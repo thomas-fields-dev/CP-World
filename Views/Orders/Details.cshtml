@@ -1,0 +1,17 @@
+﻿@model DetailsViewModel;
+@{
+    ViewData["Title"] = "Details Page";
+}
+
+<h3>Order Details</h3>
+<div>
+    <p>Order Id: @Model.Order.OrderId</p>
+    @foreach (var item in Model.Order.Items)
+    {
+        <p>
+            Product Name: @item.ProductName <br />
+            Product Quantity: @item.Quantity<br />
+            Product Price: @item.Price<br />
+        </p>
+    }
+</div>

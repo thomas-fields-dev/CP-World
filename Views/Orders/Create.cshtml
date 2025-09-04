@@ -1,0 +1,39 @@
+﻿@using CpWorld.Models
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@model CreateViewModel;
+@{
+    ViewData["Title"] = "Create Page";
+}
+
+<h3>Create New Order</h3>
+<form method="post">
+    @* this needs styled, I think MVC uses bootstrap out the box? 
+    will need to do a 5 minute investigation xD *@
+    <div>
+        Customer Name: <input asp-for="CustomerName">
+    </div>
+    @* 
+    <div>
+        Order Id: <input asp-for="OrderId" disabled />
+    </div>
+    <div>
+        Created Date: <input asp-for="OrderDate" disabled />
+     </div>
+     *@
+    <div>
+        @if (Model.Response == String.Empty)
+        {
+            <button asp-controller="Orders" asp-action="Create">Submit</button>
+        }
+        else
+        {
+            <button asp-controller="Orders" asp-action="Create" disabled>Submit</button>
+        }
+    </div>
+    <div>
+        @Model.Response
+    </div>
+</form>
