@@ -27,11 +27,20 @@ namespace CpWorld.Models
         public int OrderItemId { get; set; }
         [Required]
         [MaxLength(100)]
-        public string ProductName { get; set; } = string.Empty;
+        //public string ProductName { get; set; } = string.Empty;
+
         public int Quantity { get; set; }
-        public decimal Price { get; set; }
+        
+        public Item? Item { get; set; }
     }
 
+    public class Item
+    {
+        public string ProductName { get; set; } = string.Empty;
+        public int QuantityAvailable { get; set; }
+        public int ItemId { get; set; }
+        public decimal Price { get; set; }
+    }
 
     public class OrderViewModel
     {
@@ -53,6 +62,12 @@ namespace CpWorld.Models
 
     public class CreateViewModel : Order
     {
+        public List<OrderedItem>? OrderedItems { get; set; }
         public string Response { get; set; } = String.Empty;
+    }
+    public class OrderedItem
+    {
+        public int ItemId { get; set; }
+        public int Quantity { get; set; }
     }
 }

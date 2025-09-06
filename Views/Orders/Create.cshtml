@@ -6,6 +6,8 @@
 @model CreateViewModel;
 @{
     ViewData["Title"] = "Create Page";
+    List<OrderedItem> orderedItems = new List<OrderedItem>();
+    int counter = 0;
 }
 
 <h3>Create New Order</h3>
@@ -14,6 +16,24 @@
     will need to do a 5 minute investigation xD *@
     <div>
         Customer Name: <input asp-for="CustomerName">
+    </div>
+    <br />
+    @* <div>
+        Items: @Html.DropDownList("OrderItems")
+    </div> *@
+    <h5>Items:</h5>
+    <div>
+        @foreach (Item item in ViewBag.Items)
+        {
+            <div>
+                Product: @item.ProductName<br />
+                Price: @item.Price<br />
+                Quantity: <input asp-for="OrderedItems[counter].Quantity" />
+                <input asp-for="OrderedItems[counter].ItemId" value="@item.ItemId" hidden/>
+            </div>
+            <br />
+            { counter++; }
+        }
     </div>
     @* 
     <div>

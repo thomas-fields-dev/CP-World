@@ -1,6 +1,7 @@
 ﻿using CpWorld.Infrastructure;
 using CpWorld.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
@@ -51,21 +52,39 @@ public class OrdersController : Controller
     public IActionResult Create(CreateViewModel newOrder)
     {
         newOrder.OrderDate = DateTime.Now;
-        
+
         // duh! this is Identity Column no need to set this manually but... isnt Linq great! xD
         //int largestOrderId = _context.Orders.Max(o => o.OrderId);
         //newOrder.OrderId = ++largestOrderId;
 
         // what is a more elegant way to do this? xD
         Order order = new Order();
+        List<OrderItem> orderItems = new List<OrderItem>();
         order.OrderDate = newOrder.OrderDate;
         order.CustomerName = newOrder.CustomerName;
+        if (newOrder.OrderedItems != null)
+        {
+            foreach (OrderedItem newOrderedItem in newOrder.OrderedItems)
+            {
+                if (newOrderedItem.Quantity != 0)
+                {
+                    OrderItem oi = new OrderItem();
+                    oi.Quantity = newOrderedItem.Quantity;
+                    oi.Item = _context.Item.Where(i => i.ItemId == newOrderedItem.ItemId).First();
+                    orderItems.Add(oi);
+                }
+            }
+            order.Items = orderItems;
+        }
         _context.Orders.Add(order);
         try
         {
             int rowsAdded = _context.SaveChanges();
             if (rowsAdded != 0)
             {
+                newOrder.Items = order.Items;
+                newOrder.ItemCount = order.Items.Count;
+                newOrder.OrderId = _context.OrderItems.Max(oi => oi.OrderItemId);
                 newOrder.Response = $"Order {newOrder.OrderId} Created on {newOrder.OrderDate}";
             }
             else
@@ -76,10 +95,24 @@ public class OrdersController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex.Message);
-            newOrder.Response = ex.InnerException?.Message;
+            if (ex.InnerException != null)
+            {
+                newOrder.Response = ex.InnerException.Message;
+                _logger.LogError(ex.InnerException.Message);
+            }
+            else
+            {
+                newOrder.Response = ex.Message;
+            }
             newOrder.OrderDate = DateTime.MinValue;
             newOrder.OrderId = 0;
         }
+        List<Item> items = new List<Item>();
+        foreach (Item item in _context.Item)
+        {
+            items.Add(item);
+        }
+        ViewBag.Items = items;
         return View(newOrder);
     }
 
@@ -87,10 +120,15 @@ public class OrdersController : Controller
     public IActionResult Create()
     {
         CreateViewModel createViewModel = new CreateViewModel();
+        List<Item> items = new List<Item>();
+        foreach (Item item in _context.Item)
+        {
+            items.Add(item);
+        }
+        ViewBag.Items = items;
+
         return View(createViewModel);
     }
-
-
 
     public IActionResult Privacy()
     {
