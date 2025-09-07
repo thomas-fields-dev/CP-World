@@ -1,4 +1,5 @@
-﻿@model DetailsViewModel;
+﻿@using CpWorld.ViewModel
+@model DetailsViewModel;
 @{
     ViewData["Title"] = "Details Page";
 }
@@ -12,9 +13,9 @@
     @foreach (var orderItem in Model.Order.OrderItems)
     {
         <p>
-            Product Name: @orderItem.Item.ProductName <br />
+            Product Name: @orderItem.?Item.ProductName <br />
             Product Quantity: @orderItem.Quantity<br />
-            Product Price: @orderItem.Item.Price<br />
+            Product Price: @orderItem.?Item.Price<br />
         </p>
     }
 </div>

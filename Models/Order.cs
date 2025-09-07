@@ -1,17 +1,9 @@
-﻿using Microsoft.AspNetCore.Http.Features;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
-using System.Runtime.Serialization;
+using CpWorld.Emums;
 
 namespace CpWorld.Models
 {
-    //Order
-    //Add[Required], [StringLength] validation attributes.
-    //Add computed property → TotalAmount (sum of item prices).
-    //Add status field: OrderStatus(enum: Pending, Shipped, Cancelled).
-
     public class Order
     {
         public Order()
@@ -50,59 +42,6 @@ namespace CpWorld.Models
 
         [NotMapped]
         public OrderStatus orderStatus { get; set; }
-    }
-
-    public class OrderItem
-    {
-        public int OrderItemId { get; set; }
-
-        public int Quantity { get; set; }
-
-        public Item? Item { get; set; }
-    }
-
-    public class Item
-    {
-        public string ProductName { get; set; } = string.Empty;
-        public int QuantityAvailable { get; set; }
-        public int ItemId { get; set; }
-        public decimal Price { get; set; }
-    }
-
-    public class OrderViewModel
-    {
-        public OrderViewModel()
-        {
-            Response = new List<Order>();
-        }
-        public ICollection<Order> Response;
-    }
-
-    public class DetailsViewModel
-    {
-        public DetailsViewModel()
-        {
-            Order = new Order();
-        }
-        public Order Order { get; set; }
-    }
-
-    public class CreateViewModel : Order
-    {
-        public List<OrderedItem>? OrderedItems { get; set; }
-        public string Response { get; set; } = String.Empty;
-    }
-    public class OrderedItem
-    {
-        public int ItemId { get; set; }
-        public int Quantity { get; set; }
-    }
-
-    public enum OrderStatus
-    {
-        Pending, 
-        Shipped, 
-        Cancelled
-    }
+    }    
 }
 

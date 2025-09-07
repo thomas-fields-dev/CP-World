@@ -1,4 +1,4 @@
-namespace CpWorld.Models
+namespace CpWorld.ViewModel
 {
     public class ErrorViewModel
     {

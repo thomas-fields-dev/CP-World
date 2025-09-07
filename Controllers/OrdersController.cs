@@ -1,22 +1,9 @@
 ﻿using CpWorld.Infrastructure;
 using CpWorld.Models;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.Extensions.FileSystemGlobbing.Internal;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
-using static System.Collections.Specialized.BitVector32;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.IO.Pipelines;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.Intrinsics.X86;
+using CpWorld.ViewModel;
 
 namespace CpWorld.Controllers;
 
