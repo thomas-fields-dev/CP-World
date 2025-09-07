@@ -5,13 +5,16 @@
 
 <h3>Order Details</h3>
 <div>
-    <p>Order Id: @Model.Order.OrderId</p>
-    @foreach (var item in Model.Order.Items)
+    <p>
+        Order Id: @Model.Order.OrderId<br />
+        Total Amount: @Model.Order.TotalAmount
+    </p>
+    @foreach (var orderItem in Model.Order.OrderItems)
     {
         <p>
-            @* Product Name: @item.ProductName <br /> *@
-            Product Quantity: @item.Quantity<br />
-            @* Product Price: @item.Price<br /> *@
+            Product Name: @orderItem.Item.ProductName <br />
+            Product Quantity: @orderItem.Quantity<br />
+            Product Price: @orderItem.Item.Price<br />
         </p>
     }
 </div>

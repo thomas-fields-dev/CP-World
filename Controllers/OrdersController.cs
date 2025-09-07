@@ -1,9 +1,22 @@
 ﻿using CpWorld.Infrastructure;
 using CpWorld.Models;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.FileSystemGlobbing.Internal;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
+using static System.Collections.Specialized.BitVector32;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.IO.Pipelines;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.X86;
 
 namespace CpWorld.Controllers;
 
@@ -23,15 +36,10 @@ public class OrdersController : Controller
     public IActionResult Index()
     {
         _logger.Log(LogLevel.Information, "Connection to Database started");
-        var response = _context.Orders.Include(o => o.Items).ToList();
-
-        // cant we just item count in the view?
-        foreach (var item in response)
-        {
-            item.ItemCount = item.Items.Count();
-        }
+        var orders = _context.Orders.Include(o => o.OrderItems).ThenInclude(oi => oi.Item).ToList();
+        
         OrderViewModel homeViewModel = new OrderViewModel();
-        homeViewModel.Response = response;
+        homeViewModel.Response = orders;
         return View(homeViewModel);
     }
 
@@ -42,7 +50,7 @@ public class OrdersController : Controller
         _logger.Log(LogLevel.Information, "Connection to Database started");
         if (id != null)
         {
-            order.Order = _context.Orders.Where(o => o.OrderId == id).Include(o => o.Items).First();
+            order.Order = _context.Orders.Where(o => o.OrderId == id).Include(o => o.OrderItems).ThenInclude(oi => oi.Item).First();
         }
         return View(order);
     }
@@ -52,10 +60,6 @@ public class OrdersController : Controller
     public IActionResult Create(CreateViewModel newOrder)
     {
         newOrder.OrderDate = DateTime.Now;
-
-        // duh! this is Identity Column no need to set this manually but... isnt Linq great! xD
-        //int largestOrderId = _context.Orders.Max(o => o.OrderId);
-        //newOrder.OrderId = ++largestOrderId;
 
         // what is a more elegant way to do this? xD
         Order order = new Order();
@@ -74,7 +78,7 @@ public class OrdersController : Controller
                     orderItems.Add(oi);
                 }
             }
-            order.Items = orderItems;
+            order.OrderItems = orderItems;
         }
         _context.Orders.Add(order);
         try
@@ -82,8 +86,7 @@ public class OrdersController : Controller
             int rowsAdded = _context.SaveChanges();
             if (rowsAdded != 0)
             {
-                newOrder.Items = order.Items;
-                newOrder.ItemCount = order.Items.Count;
+                newOrder.OrderItems = order.OrderItems;
                 newOrder.OrderId = _context.OrderItems.Max(oi => oi.OrderItemId);
                 newOrder.Response = $"Order {newOrder.OrderId} Created on {newOrder.OrderDate}";
             }
@@ -183,3 +186,102 @@ public class OrdersController : Controller
 //DbContext
 //Controller (with EF)
 //Views (Index, Details, Create)
+
+//##################################################################################
+//🔥 Expanded Requirements for MVC + EF Interview Prep
+//1. Models(Domain + Validation + Relationships)
+//Order
+//Add[Required], [StringLength] validation attributes.
+//Add computed property → TotalAmount (sum of item prices).
+//Add status field: OrderStatus(enum: Pending, Shipped, Cancelled).
+//OrderItem
+//Validation: [Range(1, 100)] for Quantity.
+//Remove raw ProductName + Price duplication, instead add:
+//ItemId(FK to Item table).
+//Navigation: Item(so OrderItem links to catalog items).
+//Item
+//Already exists in your schema(ItemId, ProductName, QuantityAvailable, Price).
+//Bonus: Track IsActive so discontinued items don’t appear in dropdowns.
+//👉 Interview win: Show you understand normalization(don’t store product/price repeatedly in OrderItem → reference Item).
+
+//2. DbContext
+//Add DbSet<Item>.
+
+//Configure:
+//Order → OrderItems relationship with cascade delete.
+//OrderItem → Item(FK).
+//Use Fluent API in OnModelCreating to configure relationships + constraints.
+//(Shows you can go beyond data annotations.)
+
+//3. Controller Enhancements
+//Index:
+//Add filtering(search orders by CustomerName or filter by OrderStatus).
+//Add pagination(skip/take).
+
+//Details:
+//Show computed TotalAmount.
+
+//Create:
+//Populate a dropdown with Item list(from DB) to add to an order.
+//Ensure stock check: don’t allow ordering more than QuantityAvailable.
+
+//Edit:
+//Allow modifying Order (add/remove OrderItems).
+
+//Delete:
+//Confirm cascade delete works.
+//👉 Interview win: If you mention async actions (await _context.Orders.Include(...).ToListAsync()) you’ll look extra sharp.
+
+//4. Views
+//Index.cshtml
+//Add search box + filter dropdown for status.
+//Show pagination links.
+
+//Details.cshtml
+//Show order details, items, total, and current stock left (join with Item table).
+
+//Create.cshtml
+//Dropdowns for products.
+//Dynamic JavaScript to add/remove rows for items.
+//Validation messages(asp-validation-for).
+
+//Edit.cshtml
+//Similar to create but pre-populated.
+
+//5. Extras(Interview Show-Offs)
+//Validation:
+//Client + server side validation with ModelState.IsValid.
+
+//Error handling:
+//Graceful handling when order not found(return NotFound()).
+
+//Dependency Injection:
+//Abstract EF calls behind IOrderRepository.
+
+//Services:
+//Business logic(like checking stock availability) in a service layer.
+
+//AutoMapper:
+//Use DTOs/ViewModels to avoid exposing EF entities directly.
+
+//Unit Tests:
+//Mock DbContext(with InMemory provider).
+//Test controller actions.
+
+//6. Advanced Interview Topics
+//Lazy vs Eager vs Explicit loading
+//.Include() → eager loading.
+//Lazy loading pitfalls (N+1).
+//When to use.Load().
+
+//Performance optimizations
+//.AsNoTracking() for read-only queries.
+//Pagination(skip/take).
+
+//Security
+//Prevent overposting(use[Bind] or ViewModels).
+//Validate input before saving to DB.
+
+//Architecture
+//Move logic to Services/Repositories.
+//Discuss Repository vs Unit of Work patterns.
