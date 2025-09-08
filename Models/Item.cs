@@ -6,6 +6,7 @@
         public int QuantityAvailable { get; set; }
         public int ItemId { get; set; }
         public decimal Price { get; set; }
+        public bool isActive { get; set; }
     }
 }
 

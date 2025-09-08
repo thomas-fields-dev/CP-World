@@ -13,9 +13,9 @@
     @foreach (var orderItem in Model.Order.OrderItems)
     {
         <p>
-            Product Name: @orderItem.?Item.ProductName <br />
-            Product Quantity: @orderItem.Quantity<br />
-            Product Price: @orderItem.?Item.Price<br />
+            Product Name: <a asp-controller="Orders" asp-action="Item" asp-route-id="@orderItem?.Item?.ItemId">@orderItem.Item?.ProductName</a><br />
+            Product Quantity: @orderItem?.Quantity<br />
+            Product Price: @orderItem?.Item?.Price<br />
         </p>
     }
 </div>

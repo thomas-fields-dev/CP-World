@@ -10,7 +10,7 @@ namespace CpWorld
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews().AddDataAnnotationsLocalization();
             builder.Services.AddSingleton<CPWorldDbContent>();
 
             var app = builder.Build();

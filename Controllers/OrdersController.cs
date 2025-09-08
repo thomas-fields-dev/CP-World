@@ -24,7 +24,7 @@ public class OrdersController : Controller
     {
         _logger.Log(LogLevel.Information, "Connection to Database started");
         var orders = _context.Orders.Include(o => o.OrderItems).ThenInclude(oi => oi.Item).ToList();
-        
+
         OrderViewModel homeViewModel = new OrderViewModel();
         homeViewModel.Response = orders;
         return View(homeViewModel);
@@ -42,63 +42,74 @@ public class OrdersController : Controller
         return View(order);
     }
 
+    public IActionResult Item(int? id)
+    {
+        Item item = _context.Item.Where(i => i.ItemId == id && i.isActive).First();
+        if (item != null) return View(item);
+        else return View();
+    }
+
     //Create(Order order) (POST) → save new order with multiple items into EF.
     [HttpPost]
     public IActionResult Create(CreateViewModel newOrder)
     {
-        newOrder.OrderDate = DateTime.Now;
-
-        // what is a more elegant way to do this? xD
-        Order order = new Order();
-        List<OrderItem> orderItems = new List<OrderItem>();
-        order.OrderDate = newOrder.OrderDate;
-        order.CustomerName = newOrder.CustomerName;
-        if (newOrder.OrderedItems != null)
+        // ModelState refers to the bound Model being passed in, in this case CreateViewModel
+        if (ModelState.IsValid)
         {
-            foreach (OrderedItem newOrderedItem in newOrder.OrderedItems)
+            newOrder.OrderDate = DateTime.Now;
+
+            // what is a more elegant way to do this? xD
+            Order order = new Order();
+            List<OrderItem> orderItems = new List<OrderItem>();
+            order.OrderDate = newOrder.OrderDate;
+            order.CustomerName = newOrder.CustomerName;
+            if (newOrder.OrderedItems != null)
             {
-                if (newOrderedItem.Quantity != 0)
+                foreach (OrderItemViewModel newOrderedItem in newOrder.OrderedItems)
                 {
-                    OrderItem oi = new OrderItem();
-                    oi.Quantity = newOrderedItem.Quantity;
-                    oi.Item = _context.Item.Where(i => i.ItemId == newOrderedItem.ItemId).First();
-                    orderItems.Add(oi);
+                    if (newOrderedItem.Quantity != null && newOrderedItem.Quantity != 0)
+                    {
+                        OrderItem oi = new OrderItem();
+                        oi.Quantity = (int)newOrderedItem.Quantity;
+                        oi.Item = _context.Item.Where(i => i.ItemId == newOrderedItem.ItemId).First();
+                        orderItems.Add(oi);
+                    }
+                }
+                order.OrderItems = orderItems;
+            }
+            _context.Orders.Add(order);
+            try
+            {
+                int rowsAdded = _context.SaveChanges();
+                if (rowsAdded != 0)
+                {
+                    newOrder.OrderItems = order.OrderItems;
+                    newOrder.OrderId = _context.OrderItems.Max(oi => oi.OrderItemId);
+                    newOrder.Response = $"Order {newOrder.OrderId} Created on {newOrder.OrderDate}";
+                }
+                else
+                {
+                    newOrder.Response = $"Order Failed to Save :(";
                 }
             }
-            order.OrderItems = orderItems;
-        }
-        _context.Orders.Add(order);
-        try
-        {
-            int rowsAdded = _context.SaveChanges();
-            if (rowsAdded != 0)
+            catch (Exception ex)
             {
-                newOrder.OrderItems = order.OrderItems;
-                newOrder.OrderId = _context.OrderItems.Max(oi => oi.OrderItemId);
-                newOrder.Response = $"Order {newOrder.OrderId} Created on {newOrder.OrderDate}";
+                _logger.LogError(ex.Message);
+                if (ex.InnerException != null)
+                {
+                    newOrder.Response = ex.InnerException.Message;
+                    _logger.LogError(ex.InnerException.Message);
+                }
+                else
+                {
+                    newOrder.Response = ex.Message;
+                }
+                newOrder.OrderDate = DateTime.MinValue;
+                newOrder.OrderId = 0;
             }
-            else
-            {
-                newOrder.Response = $"Order Failed to Save :(";
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex.Message);
-            if (ex.InnerException != null)
-            {
-                newOrder.Response = ex.InnerException.Message;
-                _logger.LogError(ex.InnerException.Message);
-            }
-            else
-            {
-                newOrder.Response = ex.Message;
-            }
-            newOrder.OrderDate = DateTime.MinValue;
-            newOrder.OrderId = 0;
         }
         List<Item> items = new List<Item>();
-        foreach (Item item in _context.Item)
+        foreach (Item item in _context.Item.Where(i => i.isActive))
         {
             items.Add(item);
         }
@@ -111,7 +122,7 @@ public class OrdersController : Controller
     {
         CreateViewModel createViewModel = new CreateViewModel();
         List<Item> items = new List<Item>();
-        foreach (Item item in _context.Item)
+        foreach (Item item in _context.Item.Where(i => i.isActive))
         {
             items.Add(item);
         }
