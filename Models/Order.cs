@@ -16,6 +16,7 @@ namespace CpWorld.Models
         public string CustomerName { get; set; } = string.Empty;
         public DateTime OrderDate { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; }
+        public OrderStatus OrderStatus { get; set; }
 
         [NotMapped]
         public decimal TotalAmount
@@ -40,8 +41,6 @@ namespace CpWorld.Models
             }
         }
 
-        [NotMapped]
-        public OrderStatus orderStatus { get; set; }
     }    
 }
 

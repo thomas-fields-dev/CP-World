@@ -4,6 +4,7 @@ using CpWorld.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CpWorld.Migrations
 {
     [DbContext(typeof(CPWorldDbContent))]
-    partial class CPWorldDbContentModelSnapshot : ModelSnapshot
+    [Migration("20250908184647_OrderStatusToOrderItem")]
+    partial class OrderStatusToOrderItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,9 +67,6 @@ namespace CpWorld.Migrations
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("OrderStatus")
-                        .HasColumnType("int");
-
                     b.HasKey("OrderId");
 
                     b.ToTable("Orders");
@@ -84,6 +84,9 @@ namespace CpWorld.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderStatus")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using CpWorld.ViewModel;
+using CpWorld.Emums;
 
 namespace CpWorld.Controllers;
 
@@ -12,6 +13,19 @@ public class OrdersController : Controller
     private readonly ILogger<OrdersController> _logger;
     private readonly CPWorldDbContent _context;
 
+    //3. Controller Enhancements
+    //Index:
+    //Add filtering(search orders by CustomerName or filter by OrderStatus).
+    //Add pagination(skip/take).
+    //Details:
+    //Show computed TotalAmount.
+    //Create:
+    //Populate a dropdown with Item list(from DB) to add to an order.
+    //Ensure stock check: don’t allow ordering more than QuantityAvailable.
+    //Edit:
+    //Allow modifying Order (add/remove OrderItems).
+    //Delete:
+    //Confirm cascade delete works.
     public OrdersController(ILogger<OrdersController> logger, CPWorldDbContent context)
     {
         _logger = logger;
@@ -20,13 +34,61 @@ public class OrdersController : Controller
 
     //Controller — OrdersController
     //Index() → list all orders with customer + order date (include items count).
-    public IActionResult Index()
+    //##################
+    //Add filtering(search orders by CustomerName or filter by OrderStatus).
+    //Add pagination(skip/take).
+    public IActionResult Index(string? searchTerm, OrderStatus? orderStatus, int? currentPage)
     {
         _logger.Log(LogLevel.Information, "Connection to Database started");
         var orders = _context.Orders.Include(o => o.OrderItems).ThenInclude(oi => oi.Item).ToList();
 
+        if (searchTerm != null)
+        {
+            orders = orders.Where(o => o.CustomerName.Contains(searchTerm)).ToList();
+        }
+        if (orderStatus != OrderStatus.All)
+        {
+            switch (orderStatus)
+            {
+                case OrderStatus.Cancelled:
+                    orders = orders.Where(o => o.OrderStatus == OrderStatus.Cancelled).ToList();
+                    break;
+                case OrderStatus.Shipped:
+                    orders = orders.Where(o => o.OrderStatus == OrderStatus.Shipped).ToList();
+                    break;
+                case OrderStatus.Pending:
+                    orders = orders.Where(o => o.OrderStatus == OrderStatus.Pending).ToList();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        int resultsPerPage = 2;
+        // Decimal.Round always rounds down xD and if there is no floating point interger for 0.5 in Math.Round it will evaluate to 0 unless you AwayFromZero
+        int pages = (int)Math.Round((decimal)orders.Count / resultsPerPage, MidpointRounding.AwayFromZero);
+        int[] pageNumbers = new int[pages];
+        for (int i = 0; i < pages; i++)
+        {
+            pageNumbers[i] = i + 1;
+        }
+
+        if (currentPage == null)
+        {
+            currentPage = 1;
+        }
+
+        int resultsToSkip = resultsPerPage * ((int)currentPage - 1);
+        orders = orders.Skip(resultsToSkip).Take(resultsPerPage).ToList();
+
         OrderViewModel homeViewModel = new OrderViewModel();
+        homeViewModel.Pages = pageNumbers.ToList();
         homeViewModel.Response = orders;
+        homeViewModel.CurrentPage = (int)currentPage;
+        if (orders.Count == 0)
+        {
+            homeViewModel.Message = "No Orders to Display";
+        }
         return View(homeViewModel);
     }
 
@@ -204,7 +266,6 @@ public class OrdersController : Controller
 
 //2. DbContext
 //Add DbSet<Item>.
-
 //Configure:
 //Order → OrderItems relationship with cascade delete.
 //OrderItem → Item(FK).
@@ -215,17 +276,13 @@ public class OrdersController : Controller
 //Index:
 //Add filtering(search orders by CustomerName or filter by OrderStatus).
 //Add pagination(skip/take).
-
 //Details:
 //Show computed TotalAmount.
-
 //Create:
 //Populate a dropdown with Item list(from DB) to add to an order.
 //Ensure stock check: don’t allow ordering more than QuantityAvailable.
-
 //Edit:
 //Allow modifying Order (add/remove OrderItems).
-
 //Delete:
 //Confirm cascade delete works.
 //👉 Interview win: If you mention async actions (await _context.Orders.Include(...).ToListAsync()) you’ll look extra sharp.
@@ -234,34 +291,26 @@ public class OrdersController : Controller
 //Index.cshtml
 //Add search box + filter dropdown for status.
 //Show pagination links.
-
 //Details.cshtml
 //Show order details, items, total, and current stock left (join with Item table).
-
 //Create.cshtml
 //Dropdowns for products.
 //Dynamic JavaScript to add/remove rows for items.
 //Validation messages(asp-validation-for).
-
 //Edit.cshtml
 //Similar to create but pre-populated.
 
 //5. Extras(Interview Show-Offs)
 //Validation:
 //Client + server side validation with ModelState.IsValid.
-
 //Error handling:
 //Graceful handling when order not found(return NotFound()).
-
 //Dependency Injection:
 //Abstract EF calls behind IOrderRepository.
-
 //Services:
 //Business logic(like checking stock availability) in a service layer.
-
 //AutoMapper:
 //Use DTOs/ViewModels to avoid exposing EF entities directly.
-
 //Unit Tests:
 //Mock DbContext(with InMemory provider).
 //Test controller actions.
@@ -271,15 +320,12 @@ public class OrdersController : Controller
 //.Include() → eager loading.
 //Lazy loading pitfalls (N+1).
 //When to use.Load().
-
 //Performance optimizations
 //.AsNoTracking() for read-only queries.
 //Pagination(skip/take).
-
 //Security
 //Prevent overposting(use[Bind] or ViewModels).
 //Validate input before saving to DB.
-
 //Architecture
 //Move logic to Services/Repositories.
 //Discuss Repository vs Unit of Work patterns.

@@ -1,4 +1,5 @@
 ﻿@using CpWorld.ViewModel
+@using CpWorld.Emums
 @model OrderViewModel;
 @{
     ViewData["Title"] = "Orders Page";
@@ -6,21 +7,53 @@
 
 <h3>Orders</h3>
 <div>
-    @foreach (Order order in Model.Response)
-    {
+    <form asp-controller="Orders" asp-action="Index" method="Get">
         <p>
-            @* strange error if one does not suffix parameter name on asp-route helper tag! But, who would ever forget that, huh! xD
+            Search by: <br />
+            Customer Name: <input asp-for="SearchTerm" /> <button type="submit">Search</button>
+        </p>
+        <p>
+            Filter by: <br />
+            Order Status:
+            <select asp-for="OrderStatus">
+                @foreach (var item in Enum.GetValues(typeof(OrderStatus)))
+                {
+                    <option value="@item">@item</option>
+                }
+            </select>
+            <button type="submit">Filter</button>
+        </p>
+        Results: <br />
+        @foreach (Order order in Model.Response)
+        {
+            <p>
+                @* strange error if one does not suffix parameter name on asp-route helper tag! But, who would ever forget that, huh! xD
             InvalidOperationException: Cannot determine the 'href' attribute for <a>. 
             The following attributes are mutually exclusive:
                 asp-route
                 asp-controller, asp-action
                 asp-page, asp-page-handler *@
-            Customer Name: @order.CustomerName<br />
-            Order Id: <a asp-controller="Orders" asp-action="Details" asp-route-id="@order.OrderId">@order.OrderId</a><br />
-            Order Date: @order.OrderDate<br />
-            Number of Items: @order.OrderItems.Count<br />
-            Total Amount: @order.TotalAmount
-        </p>
-    }
+                Customer Name: @order.CustomerName<br />
+                Order Id: <a asp-controller="Orders" asp-action="Details" asp-route-id="@order.OrderId">@order.OrderId</a><br />
+                Order Date: @order.OrderDate<br />
+                Number of Items: @order.OrderItems.Count<br />
+                Total Amount: @order.TotalAmount
+            </p>
+        }
+
+        @foreach (int pageNum in Model.Pages)
+        {
+            // important to use the name attribute for model binding inside of a loop
+            if (pageNum == Model.CurrentPage) 
+            {
+                <button type="submit" name="CurrentPage" value="@pageNum" class="fw-bolder">@pageNum</button>
+            }
+            else
+            {
+                <button type="submit" name="CurrentPage" value="@pageNum">@pageNum</button>
+            }
+        }
+        <p class="fw-bold">@Model.Message</p>
+    </form>
 </div>
 

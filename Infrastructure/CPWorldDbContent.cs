@@ -10,6 +10,22 @@ namespace CpWorld.Infrastructure
             options.UseSqlServer(@"Data Source=localhost;Initial Catalog=cp_world_db;Integrated Security=SSPI;Encrypt=false;");
         }
 
+        //Add DbSet<Item>.
+        //Configure:
+        //Order → OrderItems relationship with cascade delete.
+        //OrderItem → Item(FK).
+        //Use Fluent API in OnModelCreating to configure relationships + constraints.
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.OrderItems)
+                .WithOne()
+                .OnDelete(DeleteBehavior.ClientCascade);
+
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.Item);
+        }
+
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Item> Item { get; set; }
