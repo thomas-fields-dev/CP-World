@@ -20,7 +20,7 @@
                 Product Price: @orderItem?.Item?.Price<br />
             </p>
         }
-        <button asp-controller="Orders" asp-action="Edit" type="submit">Edit</button> <button asp-controller="Orders" asp-action="Delete" type="submit">Delete</button>
+        <button asp-controller="Orders" asp-action="Edit" type="submit" disabled>Edit</button> <button asp-controller="Orders" asp-action="Delete" type="submit">Delete</button>
     </form>
     <br />
     @Model.Message
