@@ -37,7 +37,7 @@
         }
     </div>
     <div>
-        @if (Model.Response == String.Empty)
+        @if (Model.Response == String.Empty && !Model.Response.Contains("fullfill this order"))
         {
             <button asp-controller="Orders" asp-action="Create">Submit</button>
         }
@@ -47,6 +47,11 @@
         }
     </div>
     <div>
-        @Model.Response
+        <br />
+        @foreach (var line in Model.Response.Split("\n"))
+        {
+            @line
+            <br />
+        }
     </div>
 </form>

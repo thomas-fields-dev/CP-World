@@ -65,8 +65,8 @@ public class OrdersController : Controller
         }
 
         int resultsPerPage = 2;
-        // Decimal.Round always rounds down xD and if there is no floating point interger for 0.5 in Math.Round it will evaluate to 0 unless you AwayFromZero
-        int pages = (int)Math.Round((decimal)orders.Count / resultsPerPage, MidpointRounding.AwayFromZero);
+        // if there is no floating point interger for 0.5 in Decimal.Round it will evaluate to 0 unless you AwayFromZero
+        int pages = (int)Decimal.Round((decimal)orders.Count / resultsPerPage, MidpointRounding.AwayFromZero);
         int[] pageNumbers = new int[pages];
         for (int i = 0; i < pages; i++)
         {
@@ -112,6 +112,10 @@ public class OrdersController : Controller
     }
 
     //Create(Order order) (POST) → save new order with multiple items into EF.
+    //##########################
+    //Create:
+    //Populate a dropdown with Item list(from DB) to add to an order.
+    //Ensure stock check: don’t allow ordering more than QuantityAvailable.
     [HttpPost]
     public IActionResult Create(CreateViewModel newOrder)
     {
@@ -125,57 +129,80 @@ public class OrdersController : Controller
             List<OrderItem> orderItems = new List<OrderItem>();
             order.OrderDate = newOrder.OrderDate;
             order.CustomerName = newOrder.CustomerName;
+
+            List<Item> allItems = _context.Item.ToList();
+
+            Dictionary<string, int> itemsNotAvailable = new Dictionary<string, int>();
             if (newOrder.OrderedItems != null)
             {
                 foreach (OrderItemViewModel newOrderedItem in newOrder.OrderedItems)
                 {
                     if (newOrderedItem.Quantity != null && newOrderedItem.Quantity != 0)
                     {
-                        OrderItem oi = new OrderItem();
-                        oi.Quantity = (int)newOrderedItem.Quantity;
-                        oi.Item = _context.Item.Where(i => i.ItemId == newOrderedItem.ItemId).First();
-                        orderItems.Add(oi);
+                        var isAvailable = allItems.Exists(ai => ai.QuantityAvailable >= newOrderedItem.Quantity && ai.ItemId == newOrderedItem.ItemId);
+                        if (!isAvailable)
+                        {
+                            var taggedItem = allItems.Where(i => i.ItemId == newOrderedItem.ItemId).First();
+                            itemsNotAvailable.Add(taggedItem.ProductName, taggedItem.QuantityAvailable);
+                        }
+                        else
+                        {
+                            OrderItem oi = new OrderItem();
+                            oi.Quantity = (int)newOrderedItem.Quantity;
+                            oi.Item = allItems.Where(i => i.ItemId == newOrderedItem.ItemId).First();
+                            orderItems.Add(oi);
+                        }
                     }
                 }
                 order.OrderItems = orderItems;
             }
-            _context.Orders.Add(order);
-            try
+            if (itemsNotAvailable.Count == 0)
             {
-                int rowsAdded = _context.SaveChanges();
-                if (rowsAdded != 0)
+                _context.Orders.Add(order);
+                try
                 {
-                    newOrder.OrderItems = order.OrderItems;
-                    newOrder.OrderId = _context.OrderItems.Max(oi => oi.OrderItemId);
-                    newOrder.Response = $"Order {newOrder.OrderId} Created on {newOrder.OrderDate}";
+                    int rowsAdded = _context.SaveChanges();
+                    if (rowsAdded != 0)
+                    {
+                        newOrder.OrderItems = order.OrderItems;
+                        newOrder.OrderId = _context.OrderItems.Max(oi => oi.OrderItemId);
+                        newOrder.Response = $"Order {newOrder.OrderId} Created on {newOrder.OrderDate}";
+                    }
+                    else
+                    {
+                        newOrder.Response = $"Order Failed to Save :(";
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    newOrder.Response = $"Order Failed to Save :(";
+                    _logger.LogError(ex.Message);
+                    if (ex.InnerException != null)
+                    {
+                        newOrder.Response = ex.InnerException.Message;
+                        _logger.LogError(ex.InnerException.Message);
+                    }
+                    else
+                    {
+                        newOrder.Response = ex.Message;
+                    }
+                    newOrder.OrderDate = DateTime.MinValue;
+                    newOrder.OrderId = 0;
                 }
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogError(ex.Message);
-                if (ex.InnerException != null)
-                {
-                    newOrder.Response = ex.InnerException.Message;
-                    _logger.LogError(ex.InnerException.Message);
-                }
-                else
-                {
-                    newOrder.Response = ex.Message;
-                }
-                newOrder.OrderDate = DateTime.MinValue;
-                newOrder.OrderId = 0;
+                newOrder.Response = "We can not fullfill this order:\n";
+                newOrder.Response += String.Join("\n", itemsNotAvailable.Select(i => i.Key + " - Only " + i.Value + " in stock"));
             }
         }
+
         List<Item> items = new List<Item>();
         foreach (Item item in _context.Item.Where(i => i.isActive))
         {
             items.Add(item);
         }
         ViewBag.Items = items;
+
         return View(newOrder);
     }
 
