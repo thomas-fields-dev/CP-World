@@ -6,16 +6,22 @@
 
 <h3>Order Details</h3>
 <div>
-    <p>
-        Order Id: @Model.Order.OrderId<br />
-        Total Amount: @Model.Order.TotalAmount
-    </p>
-    @foreach (var orderItem in Model.Order.OrderItems)
-    {
+    <form>
+        <input name="orderId" asp-for="Order.OrderId" hidden />
         <p>
-            Product Name: <a asp-controller="Orders" asp-action="Item" asp-route-id="@orderItem?.Item?.ItemId">@orderItem.Item?.ProductName</a><br />
-            Product Quantity: @orderItem?.Quantity<br />
-            Product Price: @orderItem?.Item?.Price<br />
+            Order Id: @Model.Order.OrderId<br />
+            Total Amount: @Model.Order.TotalAmount
         </p>
-    }
+        @foreach (var orderItem in Model.Order.OrderItems)
+        {
+            <p>
+                Product Name: <a asp-controller="Orders" asp-action="Item" asp-route-id="@orderItem?.Item?.ItemId">@orderItem.Item?.ProductName</a><br />
+                Product Quantity: @orderItem?.Quantity<br />
+                Product Price: @orderItem?.Item?.Price<br />
+            </p>
+        }
+        <button asp-controller="Orders" asp-action="Edit" type="submit">Edit</button> <button asp-controller="Orders" asp-action="Delete" type="submit">Delete</button>
+    </form>
+    <br />
+    @Model.Message
 </div>

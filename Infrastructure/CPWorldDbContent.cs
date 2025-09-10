@@ -20,7 +20,7 @@ namespace CpWorld.Infrastructure
             modelBuilder.Entity<Order>()
                 .HasMany(o => o.OrderItems)
                 .WithOne()
-                .OnDelete(DeleteBehavior.ClientCascade);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<OrderItem>()
                 .HasOne(oi => oi.Item);

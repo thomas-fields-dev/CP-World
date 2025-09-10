@@ -104,6 +104,25 @@ public class OrdersController : Controller
         return View(order);
     }
 
+    //Delete:
+    //Confirm cascade delete works.
+    public IActionResult Delete(int orderId)
+    {
+        DetailsViewModel detailsView = new DetailsViewModel();
+        var orderToDelete = _context.Orders.Where(o => o.OrderId == orderId).First();
+        _context.Remove(orderToDelete);
+        int rows = _context.SaveChanges();
+        if (rows != 0)
+        {
+            detailsView.Message = $"Order {orderToDelete.OrderId} deleted!";
+        }
+        else
+        {
+            detailsView.Message = "There was an issue processing your request, please try again later.";
+        }
+        return View("Details", detailsView);
+    }
+
     public IActionResult Item(int? id)
     {
         Item item = _context.Item.Where(i => i.ItemId == id && i.isActive).First();

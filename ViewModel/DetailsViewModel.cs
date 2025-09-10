@@ -9,6 +9,7 @@ namespace CpWorld.ViewModel
             Order = new Order();
         }
         public Order Order { get; set; }
+        public string Message { get; set; } = string.Empty;
     }
 }
 
