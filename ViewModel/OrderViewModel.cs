@@ -1,4 +1,4 @@
-﻿using CpWorld.Emums;
+﻿using CpWorld.Enums;
 using CpWorld.Models;
 
 namespace CpWorld.ViewModel

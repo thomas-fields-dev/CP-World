@@ -1,4 +1,5 @@
 ﻿@using CpWorld.ViewModel
+@using CpWorld.Enums;
 @model DetailsViewModel;
 @{
     ViewData["Title"] = "Details Page";
@@ -8,7 +9,15 @@
 <div>
     <form>
         <input name="orderId" asp-for="Order.OrderId" hidden />
+        @if (Model.Message.Contains("like to delete"))
+        {
+            <div class="bg-black p-2 text-white border-danger border">
+                <div class="text-start">@Model.Message</div>
+                <div class="text-end"><button asp-controller="Orders" asp-action="Delete" type="submit">Yes</button> <button asp-controller="Orders" asp-action="Details" type="submit">No</button></div>
+            </div>
+        }
         <p>
+            Customer: @Model.Order.CustomerName<br />
             Order Id: @Model.Order.OrderId<br />
             Total Amount: @Model.Order.TotalAmount
         </p>
@@ -20,7 +29,14 @@
                 Product Price: @orderItem?.Item?.Price<br />
             </p>
         }
-        <button asp-controller="Orders" asp-action="Edit" type="submit" disabled>Edit</button> <button asp-controller="Orders" asp-action="Delete" type="submit">Delete</button>
+        <button asp-controller="Orders" asp-action="Edit" type="submit" disabled>@ButtonNames.Edit.ToString()</button> @if (Model.Disabled == ButtonNames.Delete.ToString())
+        {
+            <button asp-controller="Orders" asp-action="DisplayModal" type="submit" disabled>@ButtonNames.Delete.ToString()</button>
+        }
+        else
+        {
+            <button asp-controller="Orders" asp-action="DisplayModal" type="submit">@ButtonNames.Delete.ToString()</button>
+        }
     </form>
     <br />
     @Model.Message

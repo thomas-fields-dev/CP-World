@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using CpWorld.ViewModel;
-using CpWorld.Emums;
+using CpWorld.Enums;
 
 namespace CpWorld.Controllers;
 
@@ -29,7 +29,7 @@ public class OrdersController : Controller
     public OrdersController(ILogger<OrdersController> logger, CPWorldDbContent context)
     {
         _logger = logger;
-        _context = new CPWorldDbContent();
+        _context = context;
     }
 
     //Controller — OrdersController
@@ -93,15 +93,25 @@ public class OrdersController : Controller
     }
 
     //Details(int id) → show one order with all its items.
-    public IActionResult Details(int? id)
+    public IActionResult Details(int? orderId)
     {
         DetailsViewModel order = new DetailsViewModel();
         _logger.Log(LogLevel.Information, "Connection to Database started");
-        if (id != null)
+        if (orderId != null)
         {
-            order.Order = _context.Orders.Where(o => o.OrderId == id).Include(o => o.OrderItems).ThenInclude(oi => oi.Item).First();
+            order.Order = _context.Orders.Where(o => o.OrderId == orderId).Include(o => o.OrderItems).ThenInclude(oi => oi.Item).First();
         }
         return View(order);
+    }
+
+    public IActionResult DisplayModal(int orderId)
+    {
+        DetailsViewModel currentView = new DetailsViewModel();
+        var currentOrder = _context.Orders.Where(o => o.OrderId == orderId).First();
+        currentView.Order = currentOrder;
+        currentView.Message = $"Are you sure you would like to delete order {currentOrder.OrderId}?";
+        currentView.Disabled = ButtonNames.Delete.ToString();
+        return View("Details", currentView);
     }
 
     //Delete:
@@ -114,6 +124,7 @@ public class OrdersController : Controller
         int rows = _context.SaveChanges();
         if (rows != 0)
         {
+            detailsView.Disabled = ButtonNames.Delete.ToString();
             detailsView.Message = $"Order {orderToDelete.OrderId} deleted!";
         }
         else

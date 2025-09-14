@@ -1,4 +1,4 @@
-﻿namespace CpWorld.Emums
+﻿namespace CpWorld.Enums
 {
     public enum OrderStatus
     {

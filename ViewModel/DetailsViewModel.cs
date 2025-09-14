@@ -10,6 +10,7 @@ namespace CpWorld.ViewModel
         }
         public Order Order { get; set; }
         public string Message { get; set; } = string.Empty;
+        public string Disabled { get; set; } = string.Empty;
     }
 }
 

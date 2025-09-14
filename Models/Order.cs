@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using CpWorld.Emums;
+using CpWorld.Enums;
 
 namespace CpWorld.Models
 {
