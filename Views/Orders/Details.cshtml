@@ -29,7 +29,7 @@
                 Product Price: @orderItem?.Item?.Price<br />
             </p>
         }
-        <button asp-controller="Orders" asp-action="Edit" type="submit" disabled>@ButtonNames.Edit.ToString()</button> @if (Model.Disabled == ButtonNames.Delete.ToString())
+        <button asp-controller="Orders" asp-action="Edit" type="submit">@ButtonNames.Edit.ToString()</button> @if (Model.Disabled == ButtonNames.Delete.ToString())
         {
             <button asp-controller="Orders" asp-action="DisplayModal" type="submit" disabled>@ButtonNames.Delete.ToString()</button>
         }

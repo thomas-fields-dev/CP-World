@@ -13,19 +13,6 @@ public class OrdersController : Controller
     private readonly ILogger<OrdersController> _logger;
     private readonly CPWorldDbContent _context;
 
-    //3. Controller Enhancements
-    //Index:
-    //Add filtering(search orders by CustomerName or filter by OrderStatus).
-    //Add pagination(skip/take).
-    //Details:
-    //Show computed TotalAmount.
-    //Create:
-    //Populate a dropdown with Item list(from DB) to add to an order.
-    //Ensure stock check: don’t allow ordering more than QuantityAvailable.
-    //Edit:
-    //Allow modifying Order (add/remove OrderItems).
-    //Delete:
-    //Confirm cascade delete works.
     public OrdersController(ILogger<OrdersController> logger, CPWorldDbContent context)
     {
         _logger = logger;
@@ -139,6 +126,73 @@ public class OrdersController : Controller
         Item item = _context.Item.Where(i => i.ItemId == id && i.isActive).First();
         if (item != null) return View(item);
         else return View();
+    }
+
+    public IActionResult Edit(int? orderId)
+    {
+        var existingOrder = _context.Orders.Where(o => o.OrderId == orderId).First();
+        EditViewModel view = new EditViewModel();
+
+        view.OrderItems = existingOrder.OrderItems;
+        view.OrderId = existingOrder.OrderId;
+        view.OrderDate = existingOrder.OrderDate;
+        view.OrderStatus = existingOrder.OrderStatus;
+        view.CustomerName = existingOrder.CustomerName;
+
+        var items = _context.Item.Where(i => i.isActive).ToList();
+        ViewBag.Items = items;
+
+        return View("Edit", view);
+    }
+
+    [HttpPost]
+    public IActionResult Edit(EditViewModel model)
+    {
+        List<Item> items = _context.Item.ToList();
+        List<OrderItem> orderedItems = new List<OrderItem>();
+        if (model.OrderedItems != null)
+        {
+            foreach (var item in model.OrderedItems)
+            {
+                if (item.Quantity != null && item.Quantity != 0)
+                {
+                    OrderItem orderedItem = new OrderItem();
+                    orderedItem.Quantity = (int)item.Quantity;
+                    orderedItem.Item = items.Where(i => i.ItemId == item.ItemId).First();
+                    orderedItems.Add(orderedItem);
+                }
+            }
+        }
+
+        Order originalOrder = _context.Orders.Where(o => o.OrderId == model.OrderId).First();
+        originalOrder.OrderItems = orderedItems;
+        originalOrder.CustomerName = model.CustomerName;
+        _context.Update(originalOrder);
+        int rows = _context.SaveChanges();
+
+        EditViewModel viewModel = new EditViewModel();
+        viewModel.OrderItems = orderedItems;
+        viewModel.OrderId = model.OrderId;
+        viewModel.CustomerName = model.CustomerName;
+
+        if (rows > 0)
+        {
+            viewModel.Response = $"Order {model.OrderId} updated.";
+        }
+        else
+        {
+            viewModel.Response = "Some error occured, please try again later";
+        }
+
+        ViewBag.Items = _context.Item.Where(i => i.isActive).ToList();
+
+        return View("Edit", viewModel);
+
+        //additional checks
+        //view.Response = $"Order {existingOrder.OrderId} has been editied.";
+        //view.Response = $"New items added to order {existingOrder.OrderId} edited.";
+        //view.Response = $"Items removed from order {existingOrder.OrderId}.";
+
     }
 
     //Create(Order order) (POST) → save new order with multiple items into EF.

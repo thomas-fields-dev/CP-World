@@ -1,0 +1,58 @@
+﻿@using CpWorld.Models
+@using CpWorld.ViewModel
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@model EditViewModel;
+@{
+    ViewData["Title"] = "Edit Page";
+    List<OrderItemViewModel> orderedItems = new List<OrderItemViewModel>();
+    int counter = 0;
+}
+
+<h3>Edit Existing Order</h3>
+<form method="post">
+    <input asp-for="OrderId" value="@Model.OrderId" hidden/>
+    @* this needs styled, I think MVC uses bootstrap out the box? 
+    will need to do a 5 minute investigation xD *@
+    <div>
+        Customer Name: <input asp-for="CustomerName">
+    </div>
+    <br />
+    @* <div>
+        Items: @Html.DropDownList("OrderItems")
+    </div> *@
+    <h5>Items:</h5>
+    <div>
+        @foreach (Item item in ViewBag.Items)
+        {
+            <div>
+                Product: @item.ProductName<br />
+                Price: @item.Price<br />
+                Quantity: <input asp-for="OrderedItems[counter].Quantity" value="@Model.OrderItems?.Where(oi => oi.Item?.ItemId == item.ItemId).FirstOrDefault()?.Quantity" />
+                <input asp-for="OrderedItems[counter].ItemId" value="@item.ItemId" hidden />
+            </div>
+            <br />
+            { counter++; }
+        }
+    </div>
+    <div>
+        @if (Model.Response == String.Empty && !Model.Response.Contains("fullfill this order"))
+        {
+            <button asp-controller="Orders" asp-action="Edit">Update</button>
+        }
+        else
+        {
+            <button disabled>Update</button>
+        }
+    </div>
+    <div>
+        <br />
+        @foreach (var line in Model.Response.Split("\n"))
+        {
+            @line
+            <br />
+        }
+    </div>
+</form>
