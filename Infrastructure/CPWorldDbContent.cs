@@ -22,7 +22,7 @@ namespace CpWorld.Infrastructure
         }
 
         public DbSet<OrderItem> OrderItems { get; set; }
-        public DbSet<Order> Orders { get; set; }
+        public virtual DbSet<Order> Orders { get; set; }
         public DbSet<Item> Item { get; set; }
     }
 }
