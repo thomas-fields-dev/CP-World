@@ -1,11 +1,11 @@
-﻿using CpWorld.Infrastructure;
+﻿using CpWorld.Enums;
+using CpWorld.Infrastructure;
 using CpWorld.Models;
+using CpWorld.Services;
+using CpWorld.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using CpWorld.ViewModel;
-using CpWorld.Enums;
-using CpWorld.Services;
 
 namespace CpWorld.Controllers;
 
@@ -242,6 +242,69 @@ public class OrdersController : Controller
         ViewBag.Items = items;
 
         return View(createViewModel);
+    }
+
+    public IActionResult Reports()
+    {
+        var reportsViewModel = new ReportsViewModel();
+        return View(reportsViewModel);
+    }
+
+    [HttpPost]
+    public IActionResult Reports(int selectedReport)
+    {
+        object generatedReport = new object();
+        switch (selectedReport)
+        {
+            case 1:
+                Dictionary<string, decimal> top5Customers = new Dictionary<string, decimal>();
+                var topSpenderQuery = (from o in _context.Orders
+                                  .Include(oi => oi.OrderItems)
+                                  .ThenInclude(i => i.Item)
+                                  .AsEnumerable()
+                                       group o by o.CustomerName into grp
+                                       select new { CustomerName = grp.Key, Total = grp.Sum(t => t.TotalAmount) }
+                                       into n
+                                       orderby n.Total descending
+                                       select n).Take(5).ToList();
+                foreach (var report in topSpenderQuery)
+                {
+                    top5Customers.Add(report.CustomerName, report.Total);
+                }
+                generatedReport = top5Customers;
+                break;
+            case 2:
+                Dictionary<int, string> mostSoldProducts = new Dictionary<int, string>();
+                var mostSoldQuery = (from oi in _context.OrderItems
+                                     where oi.Item != null
+                                     group oi by oi.Item.ProductName into i
+                                     select new { ItemName = i.Key, Sold = i.Sum(f => f.Quantity) }
+                                     into r
+                                     orderby r.Sold descending
+                                     select r)
+                            .Take(5).ToList();
+                var results = mostSoldQuery;
+                foreach (var item in results)
+                {
+                    mostSoldProducts.Add(item.Sold, item.ItemName);
+                }
+                generatedReport = mostSoldProducts;
+                break;
+            case 3:
+                List<Order> reportOrders = new List<Order>();
+                var reportOrdersQuery = from o in _context.Orders.Include(o => o.OrderItems)
+                                        where o.OrderItems.Count == 0
+                                        select o;
+                reportOrders = reportOrdersQuery.ToList();
+                generatedReport = reportOrders;
+                break;
+            default:
+                break;
+        }
+        var reportsViewModel = new ReportsViewModel();
+        reportsViewModel.SelectedReport = selectedReport;
+        reportsViewModel.GeneratedReport = generatedReport;
+        return View(reportsViewModel);
     }
 
     public IActionResult Privacy()

@@ -1,0 +1,80 @@
+﻿@using CpWorld.ViewModel;
+@model ReportsViewModel;
+@{
+    ViewData["Title"] = "Report Page";
+    Dictionary<int, string> mostSoldProducts = new Dictionary<int, string>();
+    List<Order> reportOrders = new List<Order>();
+    Dictionary<string, decimal> top5Customers = new Dictionary<string, decimal>();
+    if (Model.SelectedReport == 1)
+    {
+        foreach (var report in (Dictionary<string, decimal>)Model.GeneratedReport)
+        {
+            top5Customers.Add(report.Key, report.Value);
+        }
+    }
+    else if (Model.SelectedReport == 2)
+    {
+        foreach (var report in (Dictionary<int, string>)Model.GeneratedReport)
+        {
+            mostSoldProducts.Add(report.Key, report.Value);
+        }
+    }
+    else if (Model.SelectedReport == 3)
+    {
+        foreach (var report in (List<Order>)Model.GeneratedReport)
+        {
+            reportOrders.Add(report);
+        }
+    }
+}
+
+<h3>Reports</h3>
+<br />
+<form method="post">
+    <select asp-for="SelectedReport">
+        @foreach (KeyValuePair<int, string> report in Model.Reports)
+        {
+            <option value="@report.Key">@report.Value</option>
+        }
+    </select>
+    <button asp-controller="Orders" asp-action="Reports" type="submit">Submit</button>
+</form>
+
+<br />
+@if (Model.SelectedReport == 1)
+{
+    <p>
+        @foreach (var report in top5Customers)
+        {
+            @($"{report.Key} spent {report.Value:C}")
+            <br />
+        }
+    </p>
+}
+else if (Model.SelectedReport == 2)
+{
+    <p>
+        @foreach (var report in mostSoldProducts)
+        {
+            @($"{report.Key} {report.Value}'s")
+            <br />
+        }
+    </p>
+}
+else if (Model.SelectedReport == 3)
+{
+    @if (reportOrders.Count() > 0)
+    {
+        <p>
+            @foreach (Order order in reportOrders)
+            {
+                @order.CustomerName
+                <br />
+            }
+        </p>
+    }
+    else
+    {
+        <p>No @Model.Reports[Model.SelectedReport] found!</p>
+    }
+}
