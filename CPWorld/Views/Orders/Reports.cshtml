@@ -63,7 +63,7 @@ else if (Model.SelectedReport == 2)
 }
 else if (Model.SelectedReport == 3)
 {
-    @if (reportOrders.Count() > 0)
+    @if (reportOrders.Any())
     {
         <p>
             @foreach (Order order in reportOrders)
@@ -77,4 +77,5 @@ else if (Model.SelectedReport == 3)
     {
         <p>No @Model.Reports[Model.SelectedReport] found!</p>
     }
+
 }

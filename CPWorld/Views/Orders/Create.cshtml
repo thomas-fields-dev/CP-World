@@ -7,7 +7,6 @@
 @model CreateViewModel;
 @{
     ViewData["Title"] = "Create Page";
-    List<OrderItemViewModel> orderedItems = new List<OrderItemViewModel>();
     int counter = 0;
 }
 
@@ -33,7 +32,7 @@
                 <input asp-for="OrderedItems[counter].ItemId" value="@item.ItemId" hidden />
             </div>
             <br />
-            { counter++; }
+            counter++;
         }
     </div>
     <div>
@@ -45,6 +44,7 @@
         {
             <button disabled>Submit</button>
         }
+
     </div>
     <div>
         <br />

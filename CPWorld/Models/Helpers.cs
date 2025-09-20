@@ -4,8 +4,14 @@
     {
         public static bool NotZeroOrNull(this int? number)
         {
-            if (number != null && number != 0) return true;
-            else return false;
+            if (number != null && number != 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

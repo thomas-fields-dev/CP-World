@@ -1,7 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace CpWorld.Models
+﻿namespace CpWorld.Models
 {
+    using System.ComponentModel.DataAnnotations;
+
     public class OrderItem
     {
         public int OrderItemId { get; set; }
@@ -12,4 +12,3 @@ namespace CpWorld.Models
         public Item Item { get; set; } = new Item();
     }
 }
-

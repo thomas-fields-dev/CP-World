@@ -4,6 +4,6 @@
     {
         Delete,
         Save,
-        Edit
+        Edit,
     }
 }

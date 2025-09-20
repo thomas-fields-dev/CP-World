@@ -1,15 +1,21 @@
-﻿using CpWorld.Models;
-using Microsoft.EntityFrameworkCore;
-
-namespace CpWorld.Infrastructure
+﻿namespace CpWorld.Infrastructure
 {
+    using CpWorld.Models;
+    using Microsoft.EntityFrameworkCore;
+
     public class CPWorldDbContent : DbContext
     {
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
+        public DbSet<OrderItem> OrderItems { get; set; }
+
+        public virtual DbSet<Order> Orders { get; set; }
+
+        public DbSet<Item> Item { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            options.UseSqlServer(@"Data Source=localhost;Initial Catalog=cp_world_db;Integrated Security=SSPI;Encrypt=false;");
+            optionsBuilder.UseSqlServer(@"Data Source=localhost;Initial Catalog=cp_world_db;Integrated Security=SSPI;Encrypt=false;");
         }
-        
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Order>()
@@ -20,9 +26,5 @@ namespace CpWorld.Infrastructure
             modelBuilder.Entity<OrderItem>()
                 .HasOne(oi => oi.Item);
         }
-
-        public DbSet<OrderItem> OrderItems { get; set; }
-        public virtual DbSet<Order> Orders { get; set; }
-        public DbSet<Item> Item { get; set; }
     }
 }

@@ -46,8 +46,7 @@ public class UnitTest
         mockContext.Setup(c => c.Orders).Returns(mockSet.Object);
 
         //act
-        var page = new OrderService();
-        var result = page.GetAllOrders("", CpWorld.Enums.OrderStatus.All, 1, mockContext.Object);
+        var result = OrderService.GetAllOrders("", CpWorld.Enums.OrderStatus.All, 1, mockContext.Object);
 
         //assert
         Assert.Equal(2, result.Response.Count);

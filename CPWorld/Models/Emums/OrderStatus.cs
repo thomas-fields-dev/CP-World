@@ -3,9 +3,8 @@
     public enum OrderStatus
     {
         All,
-        Pending, 
-        Shipped, 
-        Cancelled
+        Pending,
+        Shipped,
+        Cancelled,
     }
 }
-

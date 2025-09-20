@@ -7,7 +7,6 @@
 @model EditViewModel;
 @{
     ViewData["Title"] = "Edit Page";
-    List<OrderItemViewModel> orderedItems = new List<OrderItemViewModel>();
     int counter = 0;
 }
 
@@ -30,11 +29,11 @@
             <div>
                 Product: @item.ProductName<br />
                 Price: @item.Price<br />
-                Quantity: <input asp-for="OrderedItems[counter].Quantity" value="@Model.OrderItems?.Where(oi => oi.Item?.ItemId == item.ItemId).FirstOrDefault()?.Quantity" />
+                Quantity: <input asp-for="OrderedItems[counter].Quantity" value="@Model.OrderItems?.FirstOrDefault(oi => oi.Item?.ItemId == item.ItemId)?.Quantity" />
                 <input asp-for="OrderedItems[counter].ItemId" value="@item.ItemId" hidden />
             </div>
             <br />
-            { counter++; }
+            counter++;
         }
     </div>
     <div>
@@ -46,6 +45,7 @@
         {
             <button disabled>Update</button>
         }
+
     </div>
     <div>
         <br />
