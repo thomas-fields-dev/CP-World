@@ -9,7 +9,7 @@ namespace CpWorld.Models
         [Range(0, 100)]
         public int Quantity { get; set; }
 
-        public Item? Item { get; set; }        
+        public Item Item { get; set; } = new Item();
     }
 }
 

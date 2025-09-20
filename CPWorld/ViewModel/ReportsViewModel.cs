@@ -16,6 +16,6 @@ namespace CpWorld.ViewModel
         public string TotalResults { get; set; } = string.Empty;
         public int SelectedReport { get; set; }
         public Dictionary<int, string> Reports { get; set; } = new Dictionary<int, string>();
-        public object GeneratedReport { get; set; }
+        public object GeneratedReport { get; set; } = new object();
     }
 }
